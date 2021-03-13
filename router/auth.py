@@ -69,6 +69,8 @@ def signup(username = Form(...),email = Form(...),password = Form(...), db:datab
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Password is too long. Maximum length: 20 characters')
     elif PasswordStats(password).strength() <= float(0.350):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Password is not strong enough. Try adding some symbols or numbers your password')
+    elif len(email) >= 75:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Email is too long. Must be less than 75 characters')
     try:
         valid = validate_email(email)
         email = valid.email

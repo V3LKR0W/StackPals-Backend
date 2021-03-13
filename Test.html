@@ -10,21 +10,35 @@
     <h1>Login</h1>
     <form action="http://127.0.0.1:8000/v1/auth/login" method="POST" enctype="application/x-www-form-urlencoded">
         <input name="username" placeholder="username">
+        <br>
         <input name="password" placeholder="password">
+        <br>
         <input type="submit">
     </form>
     <hr>
     <h1>Create account</h1>
     <form method="POST" action="http://127.0.0.1:8000/v1/auth/signup" enctype="application/x-www-form-urlencoded">
         <input name="username" placeholder="username">
+        <br>
         <input name="email" placeholder="email">
+        <br>
         <input name="password" placeholder="password">
+        <br>
         <input type="submit">
     </form>
     <hr>
     <h1>Logout</h1>
     <form method="GET", action='http://127.0.0.1:8000/v1/auth/logout'>
         <button type='submit'>Logout</button>
+    </form>
+    <hr>
+    <h1>Create listing</h1>
+    <form method="POST" action="http://127.0.0.1:8000/v1/listing/create" enctype="application">
+    <input name="title" placeholder="Listing title">
+    <br>
+    <textarea name="context" placeholder='Enter listing'></textarea>
+    <br>
+    <input type="submit">
     </form>
 </body>
 </html>

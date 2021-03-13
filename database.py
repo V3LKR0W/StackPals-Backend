@@ -18,9 +18,9 @@ pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 class User(Base):
     __tablename__ = 'user'
     id = Column(Integer, primary_key=True, index=True)
-    username = Column(String, unique=True)
-    email = Column(String, unique=True)
-    password = Column(String, unique=False)
+    username = Column(String(26), unique=True)
+    email = Column(String(76), unique=True)
+    password = Column(String(21), unique=False)
     admin = Column(Boolean, default=False)
     banned = Column(Boolean, default=False)
 
@@ -28,7 +28,8 @@ class Listing(Base):
     __tablename__ = 'listing'
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, unique=False) 
-    body = Column(String, unique=False)
+    context = Column(String, unique=False)
+    
     
 # Hashing
 

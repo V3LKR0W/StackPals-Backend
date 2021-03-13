@@ -8,8 +8,7 @@ class User(BaseModel):
         orm_mode = True
         
 class Listing(BaseModel):
-    title: str 
-    poster: str
-    body: str
+    title: str = Field(..., example='Cool listing title')
+    context: str = Field(..., example='Interesting context')
     class Config: 
         orm_mode = True
