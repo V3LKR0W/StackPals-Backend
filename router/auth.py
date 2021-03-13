@@ -4,7 +4,7 @@ from starlette.responses import RedirectResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi_login import LoginManager
 from datetime import timedelta
-from database import Hash
+from database import Hash, User
 from email_validator import validate_email, EmailNotValidError
 from password_strength import PasswordStats
 
@@ -53,7 +53,7 @@ def login(data: OAuth2PasswordRequestForm = Depends()):
     return res
 
 
-@router.post('/signup', status_code=status.HTTP_200_OK)
+@router.post('/signup',  status_code=status.HTTP_200_OK, response_model=models.User)
 def signup(username = Form(...),email = Form(...),password = Form(...), db:database.Session = Depends(database.get_db)):
     if db.query(database.User).filter_by(username=username).first():
         raise HTTPException(status_code=status.HTTP_302_FOUND, detail='Username taken')
@@ -82,7 +82,7 @@ def signup(username = Form(...),email = Form(...),password = Form(...), db:datab
         db.add(db_user)
         db.commit()
         db.refresh(db_user)
-        return {'detail':'Account created'}
+        return models.User(username=username,email=email,password=password)
     
 
 
