@@ -47,6 +47,10 @@ def update_listing(id:int, title: str = Form(...), context: str = Form(...), use
     listing = db.query(database.Listing).filter_by(id=id).one()
     if listing == None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail='Requested listing not found')
+    elif len(title) >= 100:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, detail='Title too long')
+    elif len(context) >= 1000:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, detail='Context too long')
     elif listing.author == user.username:
         listing.title = title
         listing.context = context
