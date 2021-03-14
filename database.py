@@ -27,8 +27,10 @@ class User(Base):
 class Listing(Base):
     __tablename__ = 'listing'
     id = Column(Integer, primary_key=True, index=True)
-    title = Column(String, unique=False) 
-    context = Column(String, unique=False)
+    title = Column(String(101), unique=False) 
+    author = Column(String, unique=False)
+    context = Column(String(1001), unique=False)
+    
     
     
 # Hashing
