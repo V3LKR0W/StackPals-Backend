@@ -11,16 +11,9 @@ class User(BaseModel):
         
 # Listing model        
         
-class ListingBase(BaseModel):
-    title: str = Field(..., example='Cool listing title')
-    author: str = Field(..., example='user_name')
-    context: str = Field(..., example='Interesting context')
-    class Config: 
-        orm_mode = True
-    
-class Listing(ListingBase):
+class Listing(BaseModel):
+    post_id: str = Field(..., example='Listing post ID')
     title: str = Field(..., example='Listing title')
-    id: str = Field(..., example='Listing ID')
     author: str = Field(..., example='Listing author')
     context: str = Field(..., example='Listing context')
     class Config: 
