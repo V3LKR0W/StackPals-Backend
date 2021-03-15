@@ -40,8 +40,8 @@ def delete_listing(id:int, user = Depends(manager), db:database.Session = Depend
         db.commit()
         return {'Detail':f'Listing {id} deleted successfully'}
     else:
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail='Not authorized to delete')    
-    
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail='Not authorized to delete this listing')    
+
 @router.put('/update/{id}', status_code=status.HTTP_200_OK, response_model=models.Listing)
 def update_listing(id:int, title: str = Form(...), context: str = Form(...), user = Depends(manager), db:database.Session = Depends(database.get_db)):
     listing = db.query(database.Listing).filter_by(id=id).one()
@@ -57,5 +57,13 @@ def update_listing(id:int, title: str = Form(...), context: str = Form(...), use
         db.commit()
         return models.Listing(post_id=listing.id, title=listing.title, author=listing.author, context=listing.context)
     else:
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail='Not authorized to update this post')
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail='Not authorized to update this listing')
 
+@router.get('/search/{search_query}', status_code=status.HTTP_200_OK)
+def search(search_query:str, db:database.Session = Depends(database.get_db)):
+    result = db.query(database.Listing).filter(database.or_(database.Listing.context.contains(search_query),
+                                                             database.Listing.title.contains(search_query))).all()
+    if not result:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f'No listing contained: \'{search_query}\'')
+    else:
+        return result
