@@ -23,7 +23,7 @@ manager = LoginManager(
    )
 
 @manager.user_loader
-def load_user(username: str,db: database.Session = next(database.get_db())):
+def load_user(username: str, db: database.Session = next(database.get_db())):
     return db.query(database.User).filter_by(username=username).first()
 
 
@@ -54,7 +54,7 @@ def login(data: OAuth2PasswordRequestForm = Depends()):
 
 
 @router.post('/signup',  status_code=status.HTTP_200_OK, response_model=models.User)
-def signup(username = Form(...),email = Form(...),password = Form(...), db:database.Session = Depends(database.get_db)):
+def signup(username = Form(...), email = Form(...), password = Form(...), db:database.Session = Depends(database.get_db)):
     if db.query(database.User).filter_by(username=username).first():
         raise HTTPException(status_code=status.HTTP_302_FOUND, detail='Username taken')
     elif db.query(database.User).filter_by(email=email).first():
@@ -86,7 +86,6 @@ def signup(username = Form(...),email = Form(...),password = Form(...), db:datab
     
 
 
-
 @router.get('/account/info', status_code=status.HTTP_200_OK)
 def user_info(user=Depends(manager)):
     if user:
@@ -102,9 +101,17 @@ def user_info(user=Depends(manager)):
         
     
 @router.get('/logout', status_code=status.HTTP_200_OK)
-def logout(response: Response,user = Depends(manager)):
+def logout(response: Response, user = Depends(manager)):
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Not authenticated')
     else:
         response.delete_cookie('access-token')
         return {'detail': 'Successfully logged out'}
+    
+
+@router.put('/account/update', status_code=status.HTTP_200_OK)
+def update_account(username = Form(...), email = Form(...), password = Form(...), user = Depends(manager), db:database.Session = Depends(database.get_db)):
+    pass #TODO: FINISH update account (read more about the Optional paramater in fastapi for old account password)
+
+    
+    

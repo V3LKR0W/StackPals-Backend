@@ -12,7 +12,8 @@ class User(BaseModel):
 # Listing model        
         
 class Listing(BaseModel):
-    post_id: str = Field(..., example='Listing post ID')
+    post_id: int = Field(..., example='Listing post ID')
+    created_at: int = Field(..., example='Unix timestamp')
     title: str = Field(..., example='Listing title')
     author: str = Field(..., example='Listing author')
     context: str = Field(..., example='Listing context')
