@@ -1,5 +1,6 @@
 import env, database, models
 from fastapi import FastAPI, Depends, HTTPException, status, Response, APIRouter, Form, Request
+from typing import Optional
 from starlette.responses import RedirectResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi_login import LoginManager
@@ -34,7 +35,6 @@ def login(data: OAuth2PasswordRequestForm = Depends()):
     username = data.username
     password = data.password
 
-    
     user = load_user(username)
     if not user:
         raise HTTPException(status_code=404, detail='Wrong username or password')
@@ -42,15 +42,15 @@ def login(data: OAuth2PasswordRequestForm = Depends()):
         raise HTTPException(status_code=404, detail='Wrong username or password')
     elif user.banned == 1:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Banned account')
-
-    token = manager.create_access_token(
-        data=dict(sub=username),
-        expires=timedelta(days=int(env.EXPIRE_TOKEN_TIME))
-    ).decode('utf-8')
-    
-    res = RedirectResponse(router.url_path_for('user_info'), status_code=status.HTTP_302_FOUND)
-    manager.set_cookie(res, token)
-    return res
+    else:
+        token = manager.create_access_token(
+            data=dict(sub=username),
+            expires=timedelta(days=int(env.EXPIRE_TOKEN_TIME))
+        ).decode('utf-8')
+        
+        res = RedirectResponse(router.url_path_for('user_info'), status_code=status.HTTP_302_FOUND)
+        manager.set_cookie(res, token)
+        return res
 
 
 @router.post('/signup',  status_code=status.HTTP_200_OK, response_model=models.User)
@@ -109,9 +109,16 @@ def logout(response: Response, user = Depends(manager)):
         return {'detail': 'Successfully logged out'}
     
 
-@router.put('/account/update', status_code=status.HTTP_200_OK)
-def update_account(username = Form(...), email = Form(...), password = Form(...), user = Depends(manager), db:database.Session = Depends(database.get_db)):
-    pass #TODO: FINISH update account (read more about the Optional paramater in fastapi for old account password)
-
-    
+@router.put('/account/update/password', status_code=status.HTTP_200_OK)
+def update_password(current_password = Form(...), new_password = Form(...), user = Depends(manager), db:database.Session = Depends(database.get_db)):
+    if not user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Not authenticated')
+    else:
+        db_user = db.query(database.User).filter_by(username=user.username).first()
+        if database.Hash.verify_password(current_password.password, db_user.password):
+            user.password = database.Hash.get_password_hash(new_password)
+            db.commit(user.password)
+            return {'detail': 'Passwored changed'}
+        
+        
     
