@@ -20,7 +20,7 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String(26), unique=True)
     email = Column(String(76), unique=True)
-    password = Column(String(21), unique=False)
+    password = Column(String(41), unique=False)
     admin = Column(Boolean, default=False)
     banned = Column(Boolean, default=False)
 

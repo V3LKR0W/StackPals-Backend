@@ -63,10 +63,10 @@ def signup(username = Form(...), email = Form(...), password = Form(...), db:dat
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Username must be longer than 3 characters')
     elif len(username) >= 25:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Username is too long. Maximum length: 25 characters')
-    elif len(password) <= 8:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Password must be longer than 8 characters')
-    elif len(password) >= 20:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Password is too long. Maximum length: 20 characters')
+    elif len(password) < 7:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Password must be 8 characters or more')
+    elif len(password) >= 40:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Password is too long. Maximum length: 40 characters')
     elif PasswordStats(password).strength() <= float(0.350):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Password is not strong enough. Try adding some symbols or numbers your password')
     elif len(email) >= 75:
@@ -94,6 +94,7 @@ def user_info(user=Depends(manager)):
                 'Username': user.username,
                 'Email': user.email,           
                 'is_Admin': user.admin,
+                'is_Banned': user.banned,
                 }
             }
     else:
@@ -113,12 +114,47 @@ def logout(response: Response, user = Depends(manager)):
 def update_password(current_password = Form(...), new_password = Form(...), user = Depends(manager), db:database.Session = Depends(database.get_db)):
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Not authenticated')
+    elif len(new_password) < 7:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Password must be 8 characters or more')
+    elif len(new_password) >= 40:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Password is too long. Maximum length: 40 characters')
+    elif PasswordStats(new_password).strength() <= float(0.350):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Password is not strong enough. Try adding some symbols or numbers your password')
     else:
         db_user = db.query(database.User).filter_by(username=user.username).first()
-        if database.Hash.verify_password(current_password.password, db_user.password):
-            user.password = database.Hash.get_password_hash(new_password)
-            db.commit(user.password)
+        if database.Hash.verify_password(current_password, db_user.password):
+            db_user.password = database.Hash.get_password_hash(new_password)
+            db.commit()
+            db.refresh(db_user)
             return {'detail': 'Passwored changed'}
+        else:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Current password is incorrect')
         
+@router.put('/account/update/email', status_code=status.HTTP_200_OK)
+def update_email(email = Form(...), user = Depends(manager), db:database.Session = Depends(database.get_db)):
+    if not user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Not authenticated')
+    else:
+        if len(email) >= 75:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Email is too long')
+        else:
+            db_user = db.query(database.User).filter_by(username=user.username).first()
+            db_user.email = email
+            db.commit()
+            db.refresh(db_user)
+            return {'detail', 'Email successfully changed'}
         
+@router.delete('/account/delete', status_code=status.HTTP_200_OK)
+def delete_account(password = Form(...), user = Depends(manager), db:database.Session = Depends(database.get_db)):
+    if not user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Not authenticated')
+    else:
+        db_user = db.query(database.User).filter_by(username=user.username).first()
+        if database.Hash.verify_password(password, db_user.password):
+            db.delete(db_user)
+            db.commit()
+            return {'detail': 'Account deleted successfully.'}      
+        else:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Account password is incorrect')
+    
     
