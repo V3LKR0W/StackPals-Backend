@@ -11,7 +11,7 @@ from password_strength import PasswordStats
 
 # Router initialization
 router = APIRouter(
-    tags = ['Auth'],
+    tags = ['Authentication'],
     prefix = '/v1/auth',
 )
 

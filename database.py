@@ -32,7 +32,14 @@ class Listing(Base):
     author = Column(String, unique=False)
     context = Column(String(1001), unique=False)
     
-    
+class Messages(Base):
+    __tablename__ = 'messages'
+    id = Column(Integer, primary_key=True, index=True)
+    sent_by = Column(String, unique=False)
+    sent_at = Column(Integer, unique=False)
+    recipent = Column(String(26), unique=False)
+    header = Column(String(101), unique=False)
+    body = Column(String(1001), unique=False)
     
 # Hashing
 
