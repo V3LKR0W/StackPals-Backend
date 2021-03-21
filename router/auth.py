@@ -19,8 +19,8 @@ router = APIRouter(
 manager = LoginManager(
     secret=env.SECRET_KEY,
     tokenUrl="/auth/login",
-    use_cookie=True,
-    use_header=False,
+    use_cookie=False,
+    use_header=True,
    )
 
 @manager.user_loader
@@ -48,9 +48,12 @@ def login(data: OAuth2PasswordRequestForm = Depends()):
             expires=timedelta(days=int(env.EXPIRE_TOKEN_TIME))
         ).decode('utf-8')
         
+        # Cookie auth token
+        '''
         res = RedirectResponse(router.url_path_for('user_info'), status_code=status.HTTP_302_FOUND)
         manager.set_cookie(res, token)
-        return res
+        '''
+        return {'token':token}
 
 
 @router.post('/signup',  status_code=status.HTTP_200_OK, response_model=models.User)
@@ -83,6 +86,7 @@ def signup(username = Form(...), email = Form(...), password = Form(...), db:dat
         db.commit()
         db.refresh(db_user)
         return models.User(username=username,email=email,password=password)
+    
     
 
 
